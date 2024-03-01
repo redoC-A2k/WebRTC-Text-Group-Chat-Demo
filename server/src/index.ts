@@ -1,15 +1,15 @@
 import express from 'express'
 import { WebSocket } from 'ws'
 import dotenv from 'dotenv'
-import constants from './constants.js'
 import { handleMessages } from './socketController.js'
-import {RTCPeer} from './RTCPeer.js'
+import fs from 'fs'
+import https from 'https'
 
 dotenv.config()
 
 const app = express()
 
-const server = app.listen(process.env.PORT, () => {
+let server = app.listen(process.env.PORT, () => {
     console.log("Server is running on PORT " + process.env.PORT)
 })
 

@@ -9,7 +9,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const socketController_js_1 = require("./socketController.js");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-const server = app.listen(process.env.PORT, () => {
+let server = app.listen(process.env.PORT, () => {
     console.log("Server is running on PORT " + process.env.PORT);
 });
 const wsServer = new ws_1.WebSocket.Server({ noServer: true });

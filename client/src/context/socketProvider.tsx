@@ -10,9 +10,16 @@ export const SocketProvider = (props: any) => {
     // console.log("Rendering ...")
     let url = process.env.REACT_APP_BACKEND?.replace('http', 'ws')
     let [socket, setSocket] = useState<WebSocket>(useMemo(() => new WebSocket(url as string), []))
-    function getSocket() {
+    function getSocket(): WebSocket {
         console.log("Creating new socket")
-        return new WebSocket(url as string)
+        let tempSocket;
+        try {
+            tempSocket = new WebSocket(url as string)
+        } catch (error) {
+            console.log("Error while creating new socket", error)
+        }
+        if (!tempSocket) throw new Error("Error while creating new socket")
+        return tempSocket
     }
 
     function checkStatus() {
@@ -26,16 +33,24 @@ export const SocketProvider = (props: any) => {
 
     function reConnect() {
         console.log("Reconnecting ...")
-        if (socket.readyState === WebSocket.CLOSED)
-            setSocket(getSocket())
+        if (socket.readyState === WebSocket.CLOSED) {
+            try {
+                let socket = getSocket()
+                setSocket(socket)
+            } catch (error) {
+                console.log("catched")
+            }
+        }
     }
 
     socket.onopen = () => {
         console.log("Socket is opened")
     }
 
-    socket.onclose = () => {
+    socket.onclose = (ev) => {
         console.log("Socket is closed")
+        console.log("Code : ",ev.code)
+        console.log("Reason : ",ev.reason)
         checkStatus()
     }
 
