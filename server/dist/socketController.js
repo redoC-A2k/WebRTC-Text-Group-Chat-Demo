@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.handleMessages = void 0;
 const constants_1 = __importDefault(require("./constants"));
+const RTCIceCandidate = require('wrtc').RTCIceCandidate;
 const RTCPeer_1 = require("./RTCPeer");
-;
 const roomSocketMap = {};
 const handleMessages = async (message, isBinary, socket) => {
     message = message.toString();
@@ -32,6 +32,15 @@ const handleMessages = async (message, isBinary, socket) => {
             socket.send(JSON.stringify({ type: constants_1.default.CONNECTED }));
             if (rtcPeer.dataChannel.readyState !== 'open')
                 console.log("Data channel not open", rtcPeer.peer.signalingState, rtcPeer.dataChannel.readyState);
+            break;
+        }
+        case constants_1.default.ICE_EVENT: {
+            let rtcPeer = RTCPeer_1.RTCPeer.getRTCPeer(obj.payload.room, obj.payload.name);
+            if (obj.payload.candidate != null) {
+                let candidate = new RTCIceCandidate(obj.payload.candidate);
+                console.log(candidate);
+                rtcPeer.peer?.addIceCandidate(candidate);
+            }
             break;
         }
         default:

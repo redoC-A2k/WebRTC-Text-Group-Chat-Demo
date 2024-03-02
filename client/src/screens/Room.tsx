@@ -3,7 +3,8 @@ import { useSocket } from '../context/socketProvider';
 import { useUserProfileContext } from '../context/userProfileProvider';
 import { useNavigate } from 'react-router-dom';
 import constants from '../utils/constants';
-import RTCPeer from '../utils/RTCService';
+import RTCPeerService from '../utils/RTCService';
+import { Message } from '../utils/types';
 
 
 const Room = () => {
@@ -11,12 +12,8 @@ const Room = () => {
     const { userProfile, setUserProfile } = useUserProfileContext()
     const navigate = useNavigate()
 
-    interface Message {
-        from: string,
-        message: string
-    }
-
     const [messages, setMessages] = useState<Message[]>([])
+    const [RTCPeer, setRTCPeer] = useState(() => new RTCPeerService(socket, userProfile))
 
     useEffect(() => {
         if (socket !== null)
@@ -42,6 +39,10 @@ const Room = () => {
                             break;
                         case constants.CONNECTED:
                             console.log("Connected client and server")
+                            break;
+                        case constants.ICE_EVENT:
+                            console.log("Ice event received")
+                            RTCPeer.peer?.addIceCandidate(obj.payload)
                             break;
                         case "error":
                             console.log("Error message :", obj.payload)
@@ -70,15 +71,14 @@ const Room = () => {
         }
     }, [userProfile])
 
-    let handleMessage = useCallback((event: any) => {
+    let handleMessage = (event: any) => {
         console.log("Message received : ", messages, event.data)
         setMessages([...messages, JSON.parse(event.data)])
-    }, [messages])
+    }
 
     useEffect(() => {
         if (RTCPeer.dataChannel)
             RTCPeer.dataChannel.onmessage = handleMessage
-        RTCPeer.setSocket(socket);
     }, [RTCPeer, handleMessage])
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {

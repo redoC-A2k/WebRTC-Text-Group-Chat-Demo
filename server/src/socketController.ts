@@ -1,16 +1,14 @@
 import constants from "./constants"
 import { WebSocket } from "ws"
-import { RoomJoinRequest } from './types'
-import { RTCPeer, RoomPeerMapType } from "./RTCPeer"
-
-export interface RoomSocketMapType { [room: string]: { [name: string]: WebSocket } };
+const RTCIceCandidate = require('wrtc').RTCIceCandidate
+import { AnswerRequest, ICERequest, RoomJoinRequest, RoomSocketMapType, SocketMessage } from './types'
+import { RTCPeer } from "./RTCPeer"
 
 const roomSocketMap: RoomSocketMapType = {}
 
-
 export const handleMessages = async (message: String, isBinary: boolean, socket: WebSocket) => {
     message = message.toString()
-    let obj = JSON.parse(message as string)
+    let obj: SocketMessage = JSON.parse(message as string)
     switch (obj.type) {
         case constants.ROOM_JOIN: {
             let joinReq: RoomJoinRequest = obj.payload
@@ -28,10 +26,19 @@ export const handleMessages = async (message: String, isBinary: boolean, socket:
             // let rtcPeer = roomPeerMap[obj.payload.room][obj.payload.name]
             let rtcPeer = RTCPeer.getRTCPeer(obj.payload.room, obj.payload.name)
             // console.log("RTC Peer",rtcPeer)
-            await rtcPeer.peer?.setRemoteDescription(obj.payload.answer)
+            await rtcPeer.peer?.setRemoteDescription((obj.payload as AnswerRequest).answer)
             socket.send(JSON.stringify({ type: constants.CONNECTED }))
             if (rtcPeer.dataChannel.readyState !== 'open')
                 console.log("Data channel not open", rtcPeer.peer.signalingState, rtcPeer.dataChannel.readyState)
+            break;
+        }
+        case constants.ICE_EVENT: {
+            let rtcPeer = RTCPeer.getRTCPeer(obj.payload.room, obj.payload.name)
+            if ((obj.payload as ICERequest).candidate != null) {
+                let candidate = new RTCIceCandidate((obj.payload as ICERequest).candidate)
+                console.log(candidate)
+                rtcPeer.peer?.addIceCandidate(candidate)
+            }
             break;
         }
         default:

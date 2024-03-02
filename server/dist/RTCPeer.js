@@ -7,7 +7,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.RTCPeer = void 0;
 const constants_1 = __importDefault(require("./constants"));
 const RTCPeerConnection = require('wrtc').RTCPeerConnection;
-;
 class RTCPeer {
     constructor(room, name, socket) {
         this.makingOffer = false;
@@ -21,8 +20,6 @@ class RTCPeer {
                 if (this.peer.signalingState === "stable" || this.peer.signalingState === 'have-remote-pranswer') {
                     let offer = await this.peer.createOffer();
                     await this.peer.setLocalDescription(offer);
-                    if (this.peer.localDescription !== undefined)
-                        console.log("Peer local description set successfully");
                     this.socket?.send(JSON.stringify({ type: constants_1.default.OFFER, payload: this.peer?.localDescription }));
                 }
                 else if (this.peer.signalingState === "have-remote-offer") {
@@ -42,7 +39,6 @@ class RTCPeer {
             }
         };
         this.onIceCandidate = (event) => {
-            // console.log(event.candidate)
             this.socket?.send(JSON.stringify({ type: constants_1.default.ICE_EVENT, payload: event.candidate }));
         };
         this.handleMessage = (event) => {
@@ -73,35 +69,41 @@ class RTCPeer {
         else
             _a.roomPeerMap[room] = {};
         _a.roomPeerMap[room][name] = this;
-        this.peer = new RTCPeerConnection({
-            iceServers: [
-                {
-                    urls: [`stun:stun.${process.env.ICE_HOST}:80`,]
-                    // "stun:stun.l.google.com:19302",
-                    // "stun:global.stun.twilio.com:3478"]
-                },
-                // {
-                //     urls: `turn:global.${process.env.ICE_HOST}:80`,
-                //     username: process.env.ICE_USERNAME,
-                //     credential: process.env.ICE_CREDENTIAL,
-                // },
-                // {
-                //     urls: `turn:global.${process.env.ICE_HOST}:80?transport=tcp`,
-                //     username: process.env.ICE_USERNAME,
-                //     credential: process.env.ICE_CREDENTIAL,
-                // },
-                // {
-                //     urls: `turn:global.${process.env.ICE_HOST}:443`,
-                //     username: process.env.ICE_USERNAME,
-                //     credential: process.env.ICE_CREDENTIAL
-                // },
-                // {
-                //     urls: `turns:global.${process.env.ICE_HOST}:443?transport=tcp`,
-                //     username: process.env.ICE_USERNAME,
-                //     credential: process.env.ICE_CREDENTIAL
-                // },
-            ]
-        });
+        if (process.env.NODE_ENV != 'dev')
+            this.peer = new RTCPeerConnection({
+                iceServers: [
+                    {
+                        urls: [`stun:stun.${process.env.ICE_HOST}:80`,
+                            "stun:stun.l.google.com:19302",]
+                    },
+                    {
+                        urls: `turn:global.${process.env.ICE_HOST}:80`,
+                        username: process.env.ICE_USERNAME,
+                        credential: process.env.ICE_CREDENTIAL,
+                    },
+                    {
+                        urls: `turn:global.${process.env.ICE_HOST}:80?transport=tcp`,
+                        username: process.env.ICE_USERNAME,
+                        credential: process.env.ICE_CREDENTIAL,
+                    },
+                    {
+                        urls: `turn:global.${process.env.ICE_HOST}:443`,
+                        username: process.env.ICE_USERNAME,
+                        credential: process.env.ICE_CREDENTIAL
+                    },
+                    {
+                        urls: `turns:global.${process.env.ICE_HOST}:443?transport=tcp`,
+                        username: process.env.ICE_USERNAME,
+                        credential: process.env.ICE_CREDENTIAL
+                    },
+                ]
+            });
+        else
+            this.peer = new RTCPeerConnection({
+                iceServers: [{
+                        urls: ["stun:stun.l.google.com:19302"]
+                    }]
+            });
         this.peer.onnegotiationneeded = this.negotiationneeded;
         this.peer.onicecandidate = this.onIceCandidate;
         this.dataChannel = this.peer.createDataChannel("chat", { negotiated: true, id: 0 });
