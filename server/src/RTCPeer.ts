@@ -30,26 +30,26 @@ export class RTCPeer {
                         urls: [`stun:stun.${process.env.ICE_HOST}:80`,
                             "stun:stun.l.google.com:19302",]
                     },
-                    {
-                        urls: `turn:global.${process.env.ICE_HOST}:80`,
-                        username: process.env.ICE_USERNAME,
-                        credential: process.env.ICE_CREDENTIAL,
-                    },
-                    {
-                        urls: `turn:global.${process.env.ICE_HOST}:80?transport=tcp`,
-                        username: process.env.ICE_USERNAME,
-                        credential: process.env.ICE_CREDENTIAL,
-                    },
-                    {
-                        urls: `turn:global.${process.env.ICE_HOST}:443`,
-                        username: process.env.ICE_USERNAME,
-                        credential: process.env.ICE_CREDENTIAL
-                    },
-                    {
-                        urls: `turns:global.${process.env.ICE_HOST}:443?transport=tcp`,
-                        username: process.env.ICE_USERNAME,
-                        credential: process.env.ICE_CREDENTIAL
-                    },
+                    // {
+                    //     urls: `turn:global.${process.env.ICE_HOST}:80`,
+                    //     username: process.env.ICE_USERNAME,
+                    //     credential: process.env.ICE_CREDENTIAL,
+                    // },
+                    // {
+                    //     urls: `turn:global.${process.env.ICE_HOST}:80?transport=tcp`,
+                    //     username: process.env.ICE_USERNAME,
+                    //     credential: process.env.ICE_CREDENTIAL,
+                    // },
+                    // {
+                    //     urls: `turn:global.${process.env.ICE_HOST}:443`,
+                    //     username: process.env.ICE_USERNAME,
+                    //     credential: process.env.ICE_CREDENTIAL
+                    // },
+                    // {
+                    //     urls: `turns:global.${process.env.ICE_HOST}:443?transport=tcp`,
+                    //     username: process.env.ICE_USERNAME,
+                    //     credential: process.env.ICE_CREDENTIAL
+                    // },
                 ]
             })
         else this.peer = new RTCPeerConnection({

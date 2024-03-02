@@ -34,7 +34,7 @@ export const handleMessages = async (message: String, isBinary: boolean, socket:
         }
         case constants.ICE_EVENT: {
             let rtcPeer = RTCPeer.getRTCPeer(obj.payload.room, obj.payload.name)
-            if ((obj.payload as ICERequest).candidate != null) {
+            if ((obj.payload as ICERequest).candidate != null && (obj.payload as ICERequest).candidate.candidate != '') {
                 let candidate = new RTCIceCandidate((obj.payload as ICERequest).candidate)
                 console.log(candidate)
                 rtcPeer.peer?.addIceCandidate(candidate)
